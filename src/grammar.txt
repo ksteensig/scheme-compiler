@@ -1,0 +1,36 @@
+<program> ::= <form>*
+
+<form> ::= <definition> | <expression>
+
+<definition> ::= (define <identifier> <datum>)
+	       | (define (<identifier> <parameter name>*) <body>)
+
+<parameter name> ::= <identifier>
+
+<body> ::= (<expression>*)
+
+<expression> ::= (<identifier> <datum>*) | '(<datum>*) | <datum>
+
+<datum> ::= <number> | <string> | <boolean> | <list> | <identifier>
+
+<identifier> ::= <initial> <subsequent>* | . | + | -
+
+<initial> ::= <letter> | ! | $ | % | & | * | / | : | < | = | > | ? | ~ | _ | ^
+
+<subsequent> ::= <initial> | <digit> | . | + | -
+
+<letter> ::= [a-z]
+
+<digit> ::= [0-9]
+
+<number> ::= <int> | <float>
+
+<int> ::= <digit>*
+
+<float> ::= <digit>* . <digit>*
+
+<string character> ::= \" | \\ | <ascii except \ and ">
+
+<string> ::= " <string character>* "
+
+<boolean> ::= #t | #f
