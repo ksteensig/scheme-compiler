@@ -1,12 +1,18 @@
+%option noyywrap
+
 %{
-   #include "parser.tab.h"
+#include <ast.hpp>
+#include <parser.tab.hpp>
 %}
 
 %%
-[0-9]+     { yylval.number = lisp_number_new(atoi(yytext)); return NUMBER; }
+[0-9]      { yylval.Di = new std::string(yytext); return DIGIT; }
+[a-z]      { yylval.Ch = new std::string(yytext); return LETTER; }
 "("        { return LEFT_PAREN; }
 ")"        { return RIGHT_PAREN; }
-"+"        { return ADD; }
+"+"        { return PLUS; }
+"-"        { return MINUS; }
+"."        { return DOT; }
 " "        {}
 "\n"       { return EOL; }
 %%

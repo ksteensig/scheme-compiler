@@ -11,13 +11,13 @@ using std::vector;
 
 struct List;
 
-struct Identifier {
-  std::string str;
-};
+using String = std::string;
+
+using Identifier = String;
 
 using Number = variant<shared_ptr<float>, shared_ptr<int64_t>, shared_ptr<uint64_t>>;
 
-using Booean = bool;
+using Boolean = bool;
 
 using Datum = variant<shared_ptr<Number>, shared_ptr<String>, shared_ptr<Boolean>, shared_ptr<Identifier>, shared_ptr<List>>;
 

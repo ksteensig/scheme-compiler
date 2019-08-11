@@ -1,65 +1,71 @@
-%code requires {
-#include "ast.h"
-}
-
 %{
-#include "ast.h"
-#include <stdio.h>
-#include <stdlib.h>
+#include "ast.hpp"
 extern int yylex(); 
-int yyerror(char* msg);
-lisp_expr_t *top;
+int yyerror(std::string s);
 %}
 
 %union{
-  lisp_expr_t *number;
-  lisp_expr_t *atomic;
-  lisp_expr_t *list;
-  lisp_expr_t *addop;
-  lisp_expr_t *expr;
+  String *Ch;
+  String *Di;
+
+  Identifier *Id;
+  std::string *Initial;
+  std::string *Subsequent;
+
+  
 };
 
-%token LETTER
-%token ADD
+%token<Ch> LETTER
+%token<Di> DIGIT
+%token PLUS
+%token MINUS
+%token DOT
 %token LEFT_PAREN
 %token RIGHT_PAREN
 %token EOL
-%type <expr> expression
-%type <list> list_start
-%type <atomic> atom
+
+
+%type<Id> identifier_start
+%type<Id> identifier
+%type<Initial> initial
+%type<Subsequent> subsequent_start
+%type<Subsequent> subsequent
 
 %%
-list_start:
-LEFT_PAREN expression RIGHT_PAREN EOL { $$ = lisp_list_new($2); top = $$; }
+identifier_start: identifier EOL
 ;
 
-atom:
-ADD { $$ = $1; }
-| NUMBER { $$ = $1; }
+identifier: initial subsequent_start { *$1 = *$1 + *$2; $$ = (Identifier*)$1; delete $2; }
+| PLUS {$$ = new Identifier("+"); }
+| MINUS {$$ = new Identifier("-"); }
+| DOT {$$ = new Identifier("."); }
 ;
 
-expression:
-atom { $$ = $1; }
-| expression atom {lisp_list_append($$, $1); lisp_list_append($$, $2);}
-| expression LEFT_PAREN expression RIGHT_PAREN {lisp_expr_t *nl = lisp_list_new();
-                                                lisp_list_append(nl, $1);
-						lisp_list_append($$, nl);}
+initial: LETTER { $$ = $1; }
 ;
 
+subsequent_start: /* empty */ { $$ = new std::string(""); }
+| subsequent_start subsequent { *$1 = *$1 + *$2; $$ = $1; delete $2; }
+;
+
+subsequent:
+initial { $$ = $1; }
+| DIGIT { $$ = $1; }
+| PLUS { $$ = new std::string("+"); }
+| MINUS { $$ = new std::string("-"); }
+| DOT { $$ = new std::string("."); }
+;
 %%
 
-int main(int argc, char **argv[])
+int main(int argc, char *argv[])
 {
   yyparse();
-  lisp_expr_t *l = top;
-
-  printf("%d\n", l->type);
   
   return 0;
 }
 
-int yyerror(char *s)
+int yyerror(std::string s)
 {
-  printf("error: %s\n", s);
+  printf("error: %s\n", s.c_str());
   return 0;
 }
