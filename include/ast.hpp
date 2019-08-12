@@ -2,12 +2,15 @@
 
 #include <variant>
 #include <vector>
+#include <deque>
 #include <memory>
+
 #include <cstdint>
 
 using std::variant;
 using std::shared_ptr;
 using std::vector;
+using std::deque;
 
 struct List;
 
@@ -51,7 +54,7 @@ struct DefinitionFun {
 
 using Definition = variant<shared_ptr<DefinitionVar>, shared_ptr<DefinitionFun>>;
 
-using Form = variant<shared_ptr<Definition>, shared_ptr<Expression>>;
+using Format = variant<shared_ptr<Definition>, shared_ptr<Expression>>;
 
-using Program = vector<shared_ptr<Form>>;
+using Program = vector<shared_ptr<Format>>;
 

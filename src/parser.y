@@ -5,14 +5,23 @@ int yyerror(std::string s);
 %}
 
 %union{
-  String *Ch;
-  String *Di;
+  char Ch;
+  char Di;
 
   Identifier *Id;
-  std::string *Initial;
-  std::string *Subsequent;
-
+  char Initial;
+  std::deque<char> *Subsequent;
+  char Subsequent_;
   
+  Program *Prog;
+  Format *Form;
+  Definition *Def;
+  Expression *Expr;
+
+  Number *Num;
+  int64_t Signed_int;
+  uint64_t Unsigned_int;
+  double Float;
 };
 
 %token<Ch> LETTER
@@ -22,20 +31,49 @@ int yyerror(std::string s);
 %token DOT
 %token LEFT_PAREN
 %token RIGHT_PAREN
+%token DEFINE
 %token EOL
+ /*
+%type<Prog> program
+%type<Form> form
+%type<Def> definition
+%type<Expr> expression
 
-
-%type<Id> identifier_start
+%type<Id> parameter_name
+ */
 %type<Id> identifier
 %type<Initial> initial
-%type<Subsequent> subsequent_start
 %type<Subsequent> subsequent
+%type<Subsequent_> subsequent_
+
+ /*
+%type<Num> number;
+%type<Signed_int> signed_int
+%type<Unsigned_int> unsigned_int
+%type<Float> float_val
+ */
 
 %%
-identifier_start: identifier EOL
+ 
+program: { $$ = new Program(); }
+| program form { $1->push_back(std::make_shared<Format>(*$2)); $$ = $1; }
 ;
 
-identifier: initial subsequent_start { *$1 = *$1 + *$2; $$ = (Identifier*)$1; delete $2; }
+form:
+definition { $$ = (Format *)$1; }
+| expression { $$ = (Format *)$1; }
+;
+
+definition:
+;
+
+expression:
+;
+
+parameter_name: identifier
+;
+
+identifier: initial subsequent { $2->push_front($1); $$ = new Identifier(std::string($2->begin(), $2->end())); delete $2; }
 | PLUS {$$ = new Identifier("+"); }
 | MINUS {$$ = new Identifier("-"); }
 | DOT {$$ = new Identifier("."); }
@@ -44,17 +82,26 @@ identifier: initial subsequent_start { *$1 = *$1 + *$2; $$ = (Identifier*)$1; de
 initial: LETTER { $$ = $1; }
 ;
 
-subsequent_start: /* empty */ { $$ = new std::string(""); }
-| subsequent_start subsequent { *$1 = *$1 + *$2; $$ = $1; delete $2; }
+subsequent: /* empty */ { $$ = new deque<char>(); }
+| subsequent subsequent_ { $1->push_back($2); $$ = $1; }
 ;
 
-subsequent:
+subsequent_:
 initial { $$ = $1; }
 | DIGIT { $$ = $1; }
-| PLUS { $$ = new std::string("+"); }
-| MINUS { $$ = new std::string("-"); }
-| DOT { $$ = new std::string("."); }
+| PLUS { $$ = '+'; }
+| MINUS { $$ = '-'; }
+| DOT { $$ = '.'; }
 ;
+
+number:
+MINUS integer_ {std::make_shared<int64_t>()}
+| integer_
+;
+
+integer: integer digit {}
+
+
 %%
 
 int main(int argc, char *argv[])

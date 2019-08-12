@@ -6,8 +6,9 @@
 %}
 
 %%
-[0-9]      { yylval.Di = new std::string(yytext); return DIGIT; }
-[a-z]      { yylval.Ch = new std::string(yytext); return LETTER; }
+[0-9]      { yylval.Di = yytext[0]; return DIGIT; }
+[a-z]      { yylval.Ch = yytext[0]; return LETTER; }
+"define"   { return DEFINE; }
 "("        { return LEFT_PAREN; }
 ")"        { return RIGHT_PAREN; }
 "+"        { return PLUS; }
