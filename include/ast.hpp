@@ -18,43 +18,43 @@ using String = std::string;
 
 using Identifier = String;
 
-using Number = variant<shared_ptr<float>, shared_ptr<int64_t>, shared_ptr<uint64_t>>;
+using Number = variant<float, int64_t, uint64_t>;
 
 using Boolean = bool;
 
-using Datum = variant<shared_ptr<Number>, shared_ptr<String>, shared_ptr<Boolean>, shared_ptr<Identifier>, shared_ptr<List>>;
+using Datum = variant<Number, String, Boolean, Identifier, List>;
 
 struct List {
-  vector<shared_ptr<Datum>> datum;
+  vector<Datum> datum;
 };
 
 struct ExpressionApp {
-  shared_ptr<Identifier> id;
-  vector<shared_ptr<Datum>> datum;
+  Identifier id;
+  vector<Datum> datum;
 };
 
-using ExpressionQuote = vector<shared_ptr<Datum>>;
+using ExpressionQuote = vector<Datum>;
 
-using Expression = variant<shared_ptr<ExpressionApp>, shared_ptr<ExpressionQuote>, shared_ptr<Datum>>;
+using Expression = variant<ExpressionApp, ExpressionQuote, Datum>;
 
-using ParameterName = shared_ptr<Identifier>;
+using ParameterName = Identifier;
 
-using Body = vector<shared_ptr<Expression>>;
+using Body = vector<Expression>;
 
 struct DefinitionVar {
-  shared_ptr<Identifier> id;
-  shared_ptr<Datum> datum;
+  Identifier id;
+  Datum datum;
 };
 
 struct DefinitionFun {
-  shared_ptr<Identifier> id;
-  vector<shared_ptr<ParameterName>> param_names;
-  shared_ptr<Body> body;
+  Identifier id;
+  vector<ParameterName> param_names;
+  Body body;
 };
 
-using Definition = variant<shared_ptr<DefinitionVar>, shared_ptr<DefinitionFun>>;
+using Definition = variant<DefinitionVar, DefinitionFun>;
 
-using Format = variant<shared_ptr<Definition>, shared_ptr<Expression>>;
+using Format = variant<Definition, Expression>;
 
-using Program = vector<shared_ptr<Format>>;
+using Program = vector<Format>;
 

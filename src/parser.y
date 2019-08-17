@@ -19,6 +19,7 @@ int yyerror(std::string s);
   Expression *Expr;
 
   Number *Num;
+  vector<char> *Integer;
   int64_t Signed_int;
   uint64_t Unsigned_int;
   double Float;
@@ -46,17 +47,17 @@ int yyerror(std::string s);
 %type<Subsequent> subsequent
 %type<Subsequent_> subsequent_
 
- /*
+ 
 %type<Num> number;
+%type<Integer> integer;
 %type<Signed_int> signed_int
 %type<Unsigned_int> unsigned_int
 %type<Float> float_val
- */
-
-%%
  
+%%
+ /*
 program: { $$ = new Program(); }
-| program form { $1->push_back(std::make_shared<Format>(*$2)); $$ = $1; }
+| program form { $1->push_back(*$2); delete $2; $$ = $1; }
 ;
 
 form:
@@ -72,6 +73,7 @@ expression:
 
 parameter_name: identifier
 ;
+ */
 
 identifier: initial subsequent { $2->push_front($1); $$ = new Identifier(std::string($2->begin(), $2->end())); delete $2; }
 | PLUS {$$ = new Identifier("+"); }
@@ -95,11 +97,24 @@ initial { $$ = $1; }
 ;
 
 number:
-MINUS integer_ {std::make_shared<int64_t>()}
-| integer_
+MINUS integer { $$ = new Number(-1 * std::stoi(std::string($2->begin(), $2->end()))); delete $2; }
+| integer { $$ = new Number(std::stoi(std::string($1->begin(), $1->end()))); delete $1; }
+| integer DOT integer {
+  auto int_part = std::stoi(std::string($1->begin(), $1->end()))); delete $1;
+  auto dot = ".";
+  auto decimal_part = std::stoi(std::string($3->begin(), $3->end()))); delete $3;
+  $$ = new Number(std::stof(int_part + dot + decimal_part)); }
+| MINUS integer DOT integer {
+  auto int_part = std::stoi(std::string($2->begin(), $2->end()))); delete $2;
+  auto dot = ".";
+  auto decimal_part = std::stoi(std::string($4->begin(), $4->end()))); delete $4;
+  $$ = new Number(-1 * std::stof(int_part + dot + decimal_part)); }
 ;
 
-integer: integer digit {}
+integer:
+/* empty */ { $$ = new vector<char>(); }
+| integer DIGIT { $1->push_back($2); $$ = $1; }
+;
 
 
 %%
