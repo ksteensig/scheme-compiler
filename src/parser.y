@@ -5,31 +5,43 @@ int yyerror(std::string s);
 %}
 
 %union{
-  char Ch;
-  char Di;
-
-  Identifier *Id;
-  char Initial;
-  std::deque<char> *Subsequent;
-  char Subsequent_;
-  
   Program *Prog;
   Format *Form;
   Definition *Def;
   Expression *Expr;
+
+  char Ch;
+  char Di;
+  
+  Identifier *Id;
+  char Initial;
+  std::deque<char> *Subsequent;
+  char Subsequent_;
+
+  Datum *Dat;
+
+  char *Str;
 
   Number *Num;
   vector<char> *Integer;
   int64_t Signed_int;
   uint64_t Unsigned_int;
   double Float;
+
+  bool Bool;
+
+  List *ActualList;
+  List *List_;
 };
 
 %token<Ch> LETTER
 %token<Di> DIGIT
+%token<Str> STRING
 %token PLUS
 %token MINUS
 %token DOT
+%token TRUE
+%token FALSE
 %token LEFT_PAREN
 %token RIGHT_PAREN
 %token DEFINE
@@ -47,13 +59,18 @@ int yyerror(std::string s);
 %type<Subsequent> subsequent
 %type<Subsequent_> subsequent_
 
+%type<Dat> datum
  
-%type<Num> number;
-%type<Integer> integer;
+%type<Num> number
+%type<Integer> integer
 %type<Signed_int> signed_int
 %type<Unsigned_int> unsigned_int
 %type<Float> float_val
- 
+
+%type<Bool> boolean
+
+%type<ActualList> list
+%type<List_> list_
 %%
  /*
 program: { $$ = new Program(); }
@@ -96,6 +113,17 @@ initial { $$ = $1; }
 | DOT { $$ = '.'; }
 ;
 
+datum:
+number { $$ = new Datum(*$1); delete $1; }
+| STRING { $$ = new Datum(new String($1)); delete $1; }
+| boolean { $$ = new Datum($1); }
+| identifier { $$ = new Datum(*$1); delete $1; }
+| list {
+  auto l = List{};
+  l.datum = std::move($1->datum);
+  $$ = new Datum(l); }
+;
+
 number:
 MINUS integer { $$ = new Number(-1 * std::stoi(std::string($2->begin(), $2->end()))); delete $2; }
 | integer { $$ = new Number(std::stoi(std::string($1->begin(), $1->end()))); delete $1; }
@@ -116,6 +144,19 @@ integer:
 | integer DIGIT { $1->push_back($2); $$ = $1; }
 ;
 
+boolean:
+TRUE { $$ = true; }
+| FALSE { $$ = false; }
+;
+
+list:
+LEFT_PAREN list_ RIGHT_PAREN { $$ = (List *)$2; }
+;
+
+list_:
+/* empty */ { $$ = new List(); }
+| list_ datum { $1->datum.push_back(*$2); delete *$2; }
+;
 
 %%
 
