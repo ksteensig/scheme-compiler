@@ -12,6 +12,8 @@ int yyerror(std::string s);
 
   char Ch;
   char Di;
+
+  vector<Datum> *DatumList;
   
   Identifier *Id;
   char Initial;
@@ -54,6 +56,9 @@ int yyerror(std::string s);
 
 %type<Id> parameter_name
  */
+
+%type<DatumList> datum_list
+
 %type<Id> identifier
 %type<Initial> initial
 %type<Subsequent> subsequent
@@ -92,6 +97,16 @@ parameter_name: identifier
 ;
  */
 
+ /*expression:
+LEFT_PAREN identifier datum_list RIGHT_PAREN {  } 
+| LEFT_PAREN datum_list RIGHT_PAREN {}
+;*/
+
+datum_list:
+/* empty */ { $$ = new vector<Datum>(); }
+| datum_list datum { $1->push_back(*$2); $$ = $1; delete $2; }
+;
+
 identifier: initial subsequent { $2->push_front($1); $$ = new Identifier(std::string($2->begin(), $2->end())); delete $2; }
 | PLUS {$$ = new Identifier("+"); }
 | MINUS {$$ = new Identifier("-"); }
@@ -117,7 +132,7 @@ datum:
 number { $$ = new Datum(*$1); delete $1; }
 | STRING { $$ = new Datum(new String($1)); delete $1; }
 | boolean { $$ = new Datum($1); }
-| identifier { $$ = new Datum(*$1); delete $1; }
+| identifier { $$ = new Datum(*$1); }
 | list {
   auto l = List{};
   l.datum = std::move($1->datum);
@@ -155,8 +170,9 @@ LEFT_PAREN list_ RIGHT_PAREN { $$ = (List *)$2; }
 
 list_:
 /* empty */ { $$ = new List(); }
-| list_ datum { $1->datum.push_back(*$2); delete *$2; }
+| list_ datum { $1->datum.push_back(*$2); $$ = $1; delete *$2; }
 ;
+
 
 %%
 
