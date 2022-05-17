@@ -52,11 +52,9 @@ namespace scheme
 
    using string = pegtl::seq< AsciiQuote, pegtl::star< string_char >, AsciiQuote >;
 
-   using digit = pegtl::digit;
+   using integer = pegtl::plus< pegtl::digit >;
 
-   using decimal = pegtl::seq< pegtl::plus< digit >, Dot, pegtl::plus< digit > >;
-
-   using integer = pegtl::plus< digit >;
+   using decimal = pegtl::seq< integer, Dot, integer >;
 
    using number = pegtl::sor< decimal, integer >;
 
@@ -77,7 +75,7 @@ namespace scheme
                                Underscore,
                                Caret >;
 
-   using subsequent = pegtl::sor< initial, digit, Dot, Plus, Minus >;
+   using subsequent = pegtl::sor< initial, pegtl::digit, Dot, Plus, Minus >;
 
    using initsub = pegtl::seq< initial, pegtl::star< subsequent > >;
 
@@ -151,8 +149,16 @@ namespace scheme
                                                         form > >,
                                whitespaces >;
 
-   template< typename Parser >
-   struct grammar : pegtl::seq< Parser, pegtl::eof >
-   {};
+   using grammar = pegtl::seq< program, pegtl::eof >;
+
+   template< typename Rule >
+   using selector = pegtl::parse_tree::selector<
+      Rule,
+      pegtl::parse_tree::store_content::on<
+         identifier,
+         Define,
+         body,
+         number,
+         string > >;
 
 }  // namespace scheme
