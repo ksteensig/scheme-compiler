@@ -13,6 +13,8 @@
 
 <datum> ::= <number> | <string> | <boolean> | <list> | <identifier>
 
+<list> ::= (<datum>*)
+
 <identifier> ::= <initial> <subsequent>* | . | + | -
 
 <initial> ::= <letter> | ! | $ | % | & | * | / | : | < | = | > | ? | ~ | _ | ^
