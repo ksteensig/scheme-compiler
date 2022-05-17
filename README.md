@@ -1,2 +1,2 @@
-# scheme-dlvm
-Scheme compiler for DLVM
+# scheme
+Scheme compiler
